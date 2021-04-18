@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'dart:convert';
+import 'package:eatzi/word_model.dart';
 
 void main() {
   runApp(EatZi());
@@ -10,17 +13,16 @@ class EatZi extends StatefulWidget {
 }
 
 class _EatZiState extends State<EatZi> {
-  List<String> words = ['世歲牆樓', '細水長流', '啜泣', '輸入'];
-  Map<int, List<int>> eatzi = {
-    0: [1],
-    1: [0],
-    2: [3],
-    3: [2],
-  };
-
-  @override
-  void initState() {
-    super.initState();
+  Future<List<Word>> getWord() async {
+    Response res = await get(Uri.parse(
+        'https://script.google.com/macros/s/AKfycbxtIPYeloaPye8qVIxYaTs4w1lixcDo_fsSmjx5Fa3zCtG7Q-yN1u_K3hG2XFUvQjidYA/exec'));
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      List<Word> words = body.map((e) => Word.fromJson(e)).toList();
+      return words;
+    } else {
+      throw 'Sick jor';
+    }
   }
 
   @override
@@ -31,18 +33,27 @@ class _EatZiState extends State<EatZi> {
             body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-                children: eatzi
-                    .map((key, value) => MapEntry(
-                        key,
-                        Row(
-                          children: [
-                            Text(
-                                '${words[key]}: ${eatzi[key].map((e) => words[e]).join(',')}')
-                          ],
-                        )))
-                    .values
-                    .toList()),
+            FutureBuilder(
+                future: getWord(),
+                builder: (ctx, snapshot) {
+                  if (snapshot.hasData) {
+                    List<Word> words = snapshot.data;
+                    return Column(
+                        children: words
+                            .map((word) => Row(
+                                  children: [
+                                    Text(
+                                        '${word.word}: ${word.eatzi.map((e) => words[int.parse(e)].word).join(',')}')
+                                  ],
+                                ))
+                            .toList());
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                }),
             TextField(
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
