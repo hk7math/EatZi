@@ -19,19 +19,15 @@ class EatZi extends StatefulWidget {
 class _EatZiState extends State<EatZi> {
   TextEditingController textController = TextEditingController();
   Future<List<Word>> getWord() async {
-    // Response res = await get(Uri.parse(
-    //     'https://script.google.com/macros/s/AKfycbxtIPYeloaPye8qVIxYaTs4w1lixcDo_fsSmjx5Fa3zCtG7Q-yN1u_K3hG2XFUvQjidYA/exec'));
-    // if (res.statusCode == 200) {
-    //   List<dynamic> body = jsonDecode(res.body);
-    //   List<Word> words = body.map((e) => Word.fromJson(e)).toList();
-    //   return words;
-    // } else {
-    //   throw 'Sick jor';
-    // }
-    return [
-      Word(word: '異乎', eatzi: ['1', '0']),
-      Word(word: 'If', eatzi: ['0', '1']),
-    ];
+    Response res = await get(Uri.parse(
+        'https://script.google.com/macros/s/AKfycbxtIPYeloaPye8qVIxYaTs4w1lixcDo_fsSmjx5Fa3zCtG7Q-yN1u_K3hG2XFUvQjidYA/exec'));
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      List<Word> words = body.map((e) => Word.fromJson(e)).toList();
+      return words;
+    } else {
+      throw 'Sick jor';
+    }
   }
 
   @override
@@ -40,92 +36,104 @@ class _EatZiState extends State<EatZi> {
         debugShowCheckedModeBanner: false,
         home: Scaffold(
             body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            FutureBuilder(
-                future: getWord(),
-                builder: (ctx, snapshot) {
-                  if (snapshot.hasData) {
-                    widget.words = snapshot.data;
-                    return ValueListenableBuilder(
-                      valueListenable: inputNotifier,
-                      builder: (context, input, child) {
-                        List<Word> words = (widget.words
-                                .where((word) => word.word
-                                    .toLowerCase()
-                                    .contains(input.toString().toLowerCase()))
-                                .toList()
-                                  ..shuffle())
-                            .take(10)
-                            .toList();
-                        return Expanded(
-                            child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: words.map((word) {
-                              Color color = Color(
-                                  (Random().nextDouble() * 0xFFFFFF).toInt());
-                              return FlipCard(
-                                  onFlipDone: (done) {
-                                    if (!done) {
-                                      textController.text = word.word;
-                                    }
-                                  },
-                                  front: CardContainer(
-                                      color: color.withOpacity(.2),
-                                      texts: [word.word]),
-                                  back: CardContainer(
-                                      color: color.withOpacity(.5),
-                                      texts: word.eatzi
-                                          .map((e) =>
-                                              widget.words[int.parse(e)].word)
-                                          .toList()));
-                            }).toList(),
-                          ),
-                        ));
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+              FutureBuilder(
+                  future: getWord(),
+                  builder: (ctx, snapshot) {
+                    if (snapshot.hasData) {
+                      widget.words = snapshot.data;
+                      return ValueListenableBuilder(
+                        valueListenable: inputNotifier,
+                        builder: (context, input, child) {
+                          List<Word> words = (widget.words
+                                  .where((word) => word.word
+                                      .toLowerCase()
+                                      .contains(input.toString().toLowerCase()))
+                                  .toList()
+                                    ..shuffle())
+                              .take(10)
+                              .toList();
+                          return Expanded(
+                              child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: words.map((word) {
+                                Color color = Color(
+                                    (Random().nextDouble() * 0xFFFFFF).toInt());
+                                return FlipCard(
+                                    onFlipDone: (done) {
+                                      if (!done) {
+                                        textController.text = word.word;
+                                      }
+                                    },
+                                    front: CardContainer(
+                                        color: color.withOpacity(.2),
+                                        texts: [word.word]),
+                                    back: CardContainer(
+                                        color: color.withOpacity(.5),
+                                        texts: word.eatzi
+                                            .map((e) =>
+                                                widget.words[int.parse(e)].word)
+                                            .toList()));
+                              }).toList(),
+                            ),
+                          ));
+                        },
+                      );
+                    } else {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                  }),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Flexible(
+                    flex: 5,
+                    child: TextField(
+                      controller: textController,
+                      onChanged: (input) {
+                        inputNotifier.value = input;
                       },
-                    );
-                  } else {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                }),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Flexible(
-                flex: 5,
-                child: TextField(
-                  controller: textController,
-                  onChanged: (input) {
-                    inputNotifier.value = input;
-                  },
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: '食字之橋',
-                    hintText: '宣任',
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.all(8.0),
+                        border: OutlineInputBorder(),
+                        labelText: '食字之橋',
+                        hintText: '宣任',
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Spacer(
-                flex: 1,
-              ),
-              Flexible(
-                flex: 5,
-                child: TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: '伸出對手',
-                    hintText: '專一',
+                  Spacer(
+                    flex: 1,
                   ),
-                ),
+                  Flexible(
+                    flex: 5,
+                    child: TextField(
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.all(8.0),
+                        border: OutlineInputBorder(),
+                        labelText: '伸出對手',
+                        hintText: '專一',
+                      ),
+                    ),
+                  ),
+                  Spacer(flex: 1),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(minimumSize: Size(50, 50),
+                        primary: Color((Random().nextDouble() * 0xFFFFFF).toInt())
+                            .withOpacity(1)),
+                    child: Icon(
+                      Icons.send,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {},
+                  ),
+                ]),
               ),
-              Flexible(
-                  flex: 1,
-                  child: IconButton(icon: Icon(Icons.send), onPressed: () {}))
-            ])
-          ],
-        )));
+            ])));
   }
 }
 
