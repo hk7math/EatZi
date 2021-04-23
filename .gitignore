@@ -1,6 +1,4 @@
-.pub
-.dart_tool
-.packages
-/build
-/ios
-/android
+.dart_tool/
+android/
+build/
+ios/
