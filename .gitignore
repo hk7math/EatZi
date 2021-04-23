@@ -1,0 +1,6 @@
+.pub
+.dart_tool
+.packages
+/build
+/ios
+/android
