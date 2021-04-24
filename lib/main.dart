@@ -55,12 +55,10 @@ class _EatZiState extends State<EatZi> {
                               .take(10)
                               .toList();
                           return Expanded(
-                              child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
+                            child: GridView.count(
+                              crossAxisCount: 3,
                               children: words.map((word) {
-                                Color color = Color(
-                                    (Random().nextDouble() * 0xFFFFFF).toInt());
+                                Color color = randomColor();
                                 return FlipCard(
                                     onFlipDone: (done) {
                                       if (!done) {
@@ -68,8 +66,7 @@ class _EatZiState extends State<EatZi> {
                                       }
                                     },
                                     front: CardContainer(
-                                        color: color.withOpacity(.2),
-                                        texts: [word.word]),
+                                        color: color, texts: [word.word]),
                                     back: CardContainer(
                                         color: color.withOpacity(.5),
                                         texts: word.eatzi
@@ -78,7 +75,7 @@ class _EatZiState extends State<EatZi> {
                                             .toList()));
                               }).toList(),
                             ),
-                          ));
+                          );
                         },
                       );
                     } else {
@@ -90,52 +87,56 @@ class _EatZiState extends State<EatZi> {
                   }),
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Flexible(
-                    flex: 5,
-                    child: TextField(
-                      controller: textController,
-                      onChanged: (input) {
-                        inputNotifier.value = input;
-                      },
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.all(8.0),
-                        border: OutlineInputBorder(),
-                        labelText: '食字之橋',
-                        hintText: '宣任',
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        flex: 5,
+                        child: TextField(
+                          controller: textController,
+                          onChanged: (input) {
+                            inputNotifier.value = input;
+                          },
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.all(8.0),
+                            border: OutlineInputBorder(),
+                            labelText: '食字之橋',
+                            hintText: '宣任',
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Spacer(
-                    flex: 1,
-                  ),
-                  Flexible(
-                    flex: 5,
-                    child: TextField(
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.all(8.0),
-                        border: OutlineInputBorder(),
-                        labelText: '伸出對手',
-                        hintText: '專一',
+                      Spacer(
+                        flex: 1,
                       ),
-                    ),
-                  ),
-                  Spacer(flex: 1),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(minimumSize: Size(50, 50),
-                        primary: Color((Random().nextDouble() * 0xFFFFFF).toInt())
-                            .withOpacity(1)),
-                    child: Icon(
-                      Icons.send,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {},
-                  ),
-                ]),
+                      Flexible(
+                        flex: 5,
+                        child: TextField(
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.all(8.0),
+                            border: OutlineInputBorder(),
+                            labelText: '伸出對手',
+                            hintText: '專一',
+                          ),
+                        ),
+                      ),
+                      Spacer(flex: 1),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            minimumSize: Size(50, 50), primary: randomColor()),
+                        child: Icon(
+                          Icons.send,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {},
+                      ),
+                    ]),
               ),
             ])));
   }
 }
+
+Color randomColor() =>
+    Color(Random().nextInt(0xFFFFFF)).withOpacity(.2);
 
 class CardContainer extends StatelessWidget {
   const CardContainer({
@@ -150,7 +151,7 @@ class CardContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 20.0, right: 20.0),
+      padding: EdgeInsets.all(20.0),
       child: Container(
           decoration: BoxDecoration(
             color: color,
