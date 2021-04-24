@@ -22,6 +22,7 @@ class _EatZiState extends State<EatZi> {
   final TextEditingController textController = TextEditingController();
   final TextEditingController textController2 = TextEditingController();
   final FocusNode textNode = FocusNode();
+  Color color1, color2;
   bool isOk = true;
 
   Future<List<Word>> getWord() async {
@@ -50,6 +51,10 @@ class _EatZiState extends State<EatZi> {
     unlockNotifier.value = false;
     String word = textController.value.text;
     String eatzi = textController2.value.text;
+    if (word == '' || eatzi == '') {
+      unlockNotifier.value = true;
+      return;
+    }
     textController2.clear();
     widget.words = await postWord(word, eatzi);
     unlockNotifier.value = true;
@@ -59,128 +64,136 @@ class _EatZiState extends State<EatZi> {
 
   @override
   Widget build(BuildContext context) {
+    color1 = randomColor();
+    color2 = randomColor();
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-            body: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-              FutureBuilder(
-                  future: getWord(),
-                  builder: (ctx, snapshot) {
-                    if (snapshot.hasData) {
-                      widget.words = snapshot.data;
-                      return ValueListenableBuilder(
-                        valueListenable: inputNotifier,
-                        builder: (context, input, child) {
-                          List<Word> words = (widget.words
-                                  .where((word) => word.word
-                                      .toLowerCase()
-                                      .contains(input.toString().toLowerCase()))
-                                  .toList()
-                                    ..shuffle())
-                              .take(12)
-                              .toList();
-                          return Expanded(
-                            child: SizedBox(
-                              width:
-                                  min(MediaQuery.of(context).size.width, 600),
-                              child: GridView.count(
-                                crossAxisCount: 3,
-                                children: words.map((word) {
-                                  Color color = randomColor();
-                                  return FlipCard(
-                                      onFlipDone: (done) {
-                                        if (!done) {
-                                          textController.text = word.word;
-                                          textNode.requestFocus();
-                                        }
-                                      },
-                                      front: CardContainer(
-                                          color: color, texts: [word.word]),
-                                      back: CardContainer(
-                                          color: color.withOpacity(.5),
-                                          texts: word.eatzi
-                                              .map((e) => widget
-                                                  .words[int.parse(e)].word)
-                                              .toList()));
-                                }).toList(),
+            body: AnimatedContainer(
+          duration: Duration(seconds: 1),
+          decoration:
+              BoxDecoration(gradient: RadialGradient(colors: [color1, color2])),
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                FutureBuilder(
+                    future: getWord(),
+                    builder: (ctx, snapshot) {
+                      if (snapshot.hasData) {
+                        widget.words = snapshot.data;
+                        return ValueListenableBuilder(
+                          valueListenable: inputNotifier,
+                          builder: (context, input, child) {
+                            List<Word> words = (widget.words
+                                    .where((word) => word.word
+                                        .toLowerCase()
+                                        .contains(
+                                            input.toString().toLowerCase()))
+                                    .toList()
+                                      ..shuffle())
+                                .take(12)
+                                .toList();
+                            return Expanded(
+                              child: SizedBox(
+                                width:
+                                    min(MediaQuery.of(context).size.width, 600),
+                                child: GridView.count(
+                                  crossAxisCount: 3,
+                                  children: words.map((word) {
+                                    Color color = randomColor();
+                                    return FlipCard(
+                                        onFlipDone: (done) {
+                                          if (!done) {
+                                            textController.text = word.word;
+                                            textNode.requestFocus();
+                                          }
+                                        },
+                                        front: CardContainer(
+                                            color: color, texts: [word.word]),
+                                        back: CardContainer(
+                                            color: color.withOpacity(.5),
+                                            texts: word.eatzi
+                                                .map((e) => widget
+                                                    .words[int.parse(e)].word)
+                                                .toList()));
+                                  }).toList(),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      } else {
+                        return Padding(
+                          padding: const EdgeInsets.all(100.0),
+                          child: SizedBox(
+                            width: 150,
+                            height: 150,
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+                    }),
+                ValueListenableBuilder(
+                  valueListenable: unlockNotifier,
+                  builder: (context, unlock, child) => Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            flex: 5,
+                            child: TextField(
+                              enabled: unlock,
+                              controller: textController,
+                              onChanged: (input) {
+                                inputNotifier.value = input;
+                              },
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.all(8.0),
+                                border: OutlineInputBorder(),
+                                labelText: '食字之橋',
                               ),
                             ),
-                          );
-                        },
-                      );
-                    } else {
-                      return Padding(
-                        padding: const EdgeInsets.all(100.0),
-                        child: SizedBox(
-                          width: 150,
-                          height: 150,
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    }
-                  }),
-              ValueListenableBuilder(
-                valueListenable: unlockNotifier,
-                builder: (context, unlock, child) => Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          flex: 5,
-                          child: TextField(
-                            enabled: unlock,
-                            controller: textController,
-                            onChanged: (input) {
-                              inputNotifier.value = input;
-                            },
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.all(8.0),
-                              border: OutlineInputBorder(),
-                              labelText: '食字之橋',
+                          ),
+                          Spacer(
+                            flex: 1,
+                          ),
+                          Flexible(
+                            flex: 5,
+                            child: TextField(
+                              enabled: unlock,
+                              controller: textController2,
+                              focusNode: textNode,
+                              onSubmitted: (text) {
+                                onSubmit(widget);
+                              },
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.all(8.0),
+                                border: OutlineInputBorder(),
+                                labelText: '執字之手',
+                              ),
                             ),
                           ),
-                        ),
-                        Spacer(
-                          flex: 1,
-                        ),
-                        Flexible(
-                          flex: 5,
-                          child: TextField(
-                            enabled: unlock,
-                            controller: textController2,
-                            focusNode: textNode,
-                            onSubmitted: (text) {
-                              onSubmit(widget);
-                            },
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.all(8.0),
-                              border: OutlineInputBorder(),
-                              labelText: '執字之手',
+                          Spacer(flex: 1),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                minimumSize: Size(50, 50),
+                                primary: randomColor()),
+                            child: Icon(
+                              unlock ? Icons.send : Icons.refresh,
+                              color: Colors.white,
                             ),
+                            onPressed: unlock
+                                ? () {
+                                    onSubmit(widget);
+                                  }
+                                : () {},
                           ),
-                        ),
-                        Spacer(flex: 1),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              minimumSize: Size(50, 50),
-                              primary: randomColor()),
-                          child: Icon(
-                            Icons.send,
-                            color: Colors.white,
-                          ),
-                          onPressed: unlock
-                              ? () {
-                                  onSubmit(widget);
-                                }
-                              : () {},
-                        ),
-                      ]),
+                        ]),
+                  ),
                 ),
-              ),
-            ])));
+              ]),
+        )));
   }
 }
 
